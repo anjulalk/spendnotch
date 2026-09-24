@@ -1,7 +1,7 @@
 {
   "name": "spendnotch",
   "productName": "Spend Notch",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Today's local AI coding spend in USD, in a MacBook-style notch for Windows.",
   "author": "anjulalk <mail@anjula.dev>",
   "license": "MIT",
