@@ -78,7 +78,7 @@ GitHub Actions builds releases on Windows and publishes them with the installer 
   git push origin v0.2.0
   ```
 
-- **Dependabot:** a merged security or Electron update automatically dispatches a patch release.
+- **Dependabot:** minor and patch updates merge automatically after CI and dispatch matching minor or patch releases. Security and Electron updates also dispatch a patch release; major updates wait for review.
 
 The release notes come from `.github/release-notes.md`, followed by the generated changelog.
 

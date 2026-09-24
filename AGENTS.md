@@ -71,7 +71,7 @@ There is no test suite. Validate changes with `npm run build`, then run the app.
 - `ci.yml` typechecks and builds on every push to `main` and on every PR.
 - `dependabot-merge.yml` runs after CI succeeds on a Dependabot PR:
   - It approves and squash-merges security, minor and patch updates. Majors wait for review.
-  - For security or Electron updates, it then dispatches a patch release.
+  - A successful minor update dispatches a minor release; patch, security and other approved updates dispatch a patch release.
 - `release.yml` builds the NSIS installer:
   - A pushed `v*` tag publishes that version.
   - A dispatch with `bump` set to `patch`, `minor` or `major` commits the version bump as `github-actions[bot]`, tags it and publishes it.

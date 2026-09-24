@@ -33,21 +33,43 @@ jobs:
           if [ "$authors" != "dependabot[bot]" ]; then echo "Skipping #$pr: commits by $authors"; exit 0; fi
           title=$(gh pr view "$pr" --json title --jq .title)
           msg=$(gh api "repos/$GH_REPO/commits/$SHA" --jq .commit.message)
-          security=false; major=false; electron=false
+          # Dependabot writes its update type into the signed commit message.
+          security=false; major=false; minor=false; patch=false; electron=false
           [[ "$title" == "Bump the security group"* ]] && security=true
+          [[ "$title" == "Bump the minor"* ]] && minor=true
+          [[ "$title" == "Bump the patch"* ]] && patch=true
           grep -q 'update-type: version-update:semver-major' <<< "$msg" && major=true
+          grep -q 'update-type: version-update:semver-minor' <<< "$msg" && minor=true
+          grep -q 'update-type: version-update:semver-patch' <<< "$msg" && patch=true
           grep -qE 'dependency-name: electron$' <<< "$msg" && electron=true
-          echo "#$pr security=$security major=$major electron=$electron"
+          echo "#$pr security=$security major=$major minor=$minor patch=$patch electron=$electron"
           echo "pr=$pr" >> "$GITHUB_OUTPUT"
-          if [ "$security" = true ] || [ "$major" = false ]; then echo "merge=true" >> "$GITHUB_OUTPUT"; fi
-          if [ "$security" = true ] || [ "$electron" = true ]; then echo "release=true" >> "$GITHUB_OUTPUT"; fi
+          merge=false
+          if [ "$security" = true ]; then
+            merge=true
+          elif [ "$major" = false ] && { [ "$minor" = true ] || [ "$patch" = true ] || [ "$electron" = true ]; }; then
+            merge=true
+          fi
+          if [ "$merge" = true ]; then echo "merge=true" >> "$GITHUB_OUTPUT"; fi
+          if [ "$security" = true ]; then
+            echo "release=patch" >> "$GITHUB_OUTPUT"
+          elif [ "$minor" = true ]; then
+            echo "release=minor" >> "$GITHUB_OUTPUT"
+          elif [ "$patch" = true ] || [ "$electron" = true ]; then
+            echo "release=patch" >> "$GITHUB_OUTPUT"
+          fi
       - name: Approve and merge
+        id: merge
         if: steps.check.outputs.merge == 'true'
         env:
           PR: ${{ steps.check.outputs.pr }}
         run: |
           gh pr review "$PR" --approve --body "Auto-approved: Dependabot update passed CI." || echo "::warning::Could not approve #$PR"
-          gh pr merge "$PR" --squash --delete-branch --match-head-commit "$SHA"
+          if gh pr merge "$PR" --squash --delete-branch --match-head-commit "$SHA"; then
+            echo "merged=true" >> "$GITHUB_OUTPUT"
+          else
+            gh pr comment "$PR" --body "The checks are green, but GitHub has not merged this yet. It may need a moment, or a look." || true
+          fi
       - name: Trigger release
-        if: steps.check.outputs.merge == 'true' && steps.check.outputs.release == 'true'
-        run: gh workflow run release.yml -f bump=patch
+        if: steps.merge.outputs.merged == 'true' && steps.check.outputs.release != ''
+        run: gh workflow run release.yml --ref main -f bump=${{ steps.check.outputs.release }}

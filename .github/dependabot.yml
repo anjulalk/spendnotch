@@ -11,7 +11,11 @@ updates:
       minor:
         applies-to: version-updates
         patterns: ['*']
-        update-types: [minor, patch]
+        update-types: [minor]
+      patch:
+        applies-to: version-updates
+        patterns: ['*']
+        update-types: [patch]
   - package-ecosystem: github-actions
     directory: /
     schedule:
