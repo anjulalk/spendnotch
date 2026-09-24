@@ -1,8 +1,9 @@
 # Spend Notch
 
-[![Release](https://img.shields.io/github/v/release/anjulalk/spendnotch)](https://github.com/anjulalk/spendnotch/releases/latest)
-[![CI](https://github.com/anjulalk/spendnotch/actions/workflows/ci.yml/badge.svg)](https://github.com/anjulalk/spendnotch/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![release](https://img.shields.io/github/v/release/anjulalk/spendnotch?label=release&labelColor=44403a&color=5f5a51&style=flat-square)](https://github.com/anjulalk/spendnotch/releases/latest)
+[![ci](https://img.shields.io/github/actions/workflow/status/anjulalk/spendnotch/ci.yml?branch=main&label=ci&labelColor=44403a&style=flat-square)](https://github.com/anjulalk/spendnotch/actions/workflows/ci.yml)
+[![platform](https://img.shields.io/badge/platform-windows-5f5a51?labelColor=44403a&style=flat-square)](https://github.com/anjulalk/spendnotch/releases/latest)
+[![license](https://img.shields.io/badge/license-MIT-c1603c?labelColor=44403a&style=flat-square)](LICENSE)
 
 A MacBook-style notch for Windows that shows what GitHub Copilot has cost you **today**, in US dollars.
 
