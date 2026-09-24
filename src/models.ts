@@ -1,10 +1,10 @@
 const tints: [RegExp, string][] = [
-  [/^claude/, '#d97757'],
-  [/^(gpt|o\d|codex)/, '#10a37f'],
-  [/^gemini/, '#4796e3'],
-  [/^grok/, '#d4d4d8'],
-  [/^mai/, '#7fba00'],
-  [/^kimi/, '#a78bfa'],
+  [/claude/i, '#d97757'],
+  [/(^|\/)(gpt|o\d|codex)/i, '#10a37f'],
+  [/gemini/i, '#4796e3'],
+  [/grok/i, '#d4d4d8'],
+  [/(^|\/)mai/i, '#7fba00'],
+  [/kimi/i, '#a78bfa'],
 ]
 
 export const tint = (m: string) => tints.find(([r]) => r.test(m))?.[1] ?? '#8b949e'

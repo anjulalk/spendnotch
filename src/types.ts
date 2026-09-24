@@ -1,11 +1,27 @@
-export type Row = { model: string; calls: number; nano: number }
+export type Source = 'copilot' | 'opencode'
+
+export type Row = {
+  source?: Source
+  provider?: string
+  model: string
+  calls: number
+  usd: number
+  credits: number
+}
+
+export type Total = {
+  calls: number
+  usd: number
+  credits: number
+}
 
 export type Snap = {
   rows: Row[]
-  month: { calls: number; nano: number }
+  month: Total
   last?: number
   at: number
   err?: string
+  warnings?: string[]
 }
 
 export type Api = {

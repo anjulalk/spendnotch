@@ -1,7 +1,7 @@
 import { app, BrowserWindow, ipcMain, Menu, nativeImage, screen, Tray } from 'electron'
 import { join } from 'node:path'
 import { read, watch } from './db'
-import { money, sum } from '../src/usage'
+import { cash, sum } from '../src/usage'
 import type { Snap } from '../src/types'
 
 const W = 520
@@ -24,7 +24,11 @@ const place = () => {
 const push = () => {
   snap = read()
   win?.webContents.send('snap', snap)
-  tray?.setToolTip(snap.err ? `Spend Notch: ${snap.err}` : `Copilot today: ${money(sum(snap.rows, 'nano'))}`)
+  tray?.setToolTip(
+    snap.err
+      ? `Spend Notch: ${snap.err}`
+      : `AI today: ${cash(sum(snap.rows, 'usd'))}${snap.warnings?.length ? ' (partial data)' : ''}`,
+  )
 }
 
 const show = (on = !win?.isVisible()) => {

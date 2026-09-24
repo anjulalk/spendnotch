@@ -4,7 +4,7 @@ Guidance for AI coding agents working on Spend Notch.
 
 ## What this is
 
-A Windows desktop widget: a MacBook-style notch pinned to the top center of the primary display that shows today's GitHub Copilot spend in USD. Hovering expands it into a per-model breakdown with AI credits, calls and month-to-date spend.
+A Windows desktop widget: a MacBook-style notch pinned to the top center of the primary display that shows today's combined GitHub Copilot and OpenCode spend in USD. Hovering expands it into a source-aware model breakdown with Copilot AI credits, calls and month-to-date spend.
 
 ## Stack
 
@@ -17,7 +17,8 @@ A Windows desktop widget: a MacBook-style notch pinned to the top center of the 
 | Path | Purpose |
 | --- | --- |
 | `electron/main.ts` | Window, tray, IPC, display placement |
-| `electron/db.ts` | Read-only queries against the Copilot session store, plus the file watcher |
+| `electron/db.ts` | Merges read-only Copilot and OpenCode usage and owns the file watcher |
+| `electron/opencode.ts` | Reads OpenCode V1/V2 SQLite and legacy JSON usage |
 | `electron/preload.ts` | Exposes `window.api` (`snap`, `on`, `hover`) via `contextBridge` |
 | `src/App.tsx` | Notch UI, collapsed and expanded |
 | `src/usage.ts` | Credit/USD math and formatting, shared with the main process |
@@ -39,13 +40,15 @@ npm run dist       # NSIS installer in release/
 
 There is no test suite. Validate changes with `npm run build`, then run the app.
 
-## Data source
+## Data sources
 
 - The app reads `%USERPROFILE%\.copilot\session-store.db` (override with `SPEND_NOTCH_DB`), table `assistant_usage_events`. The Copilot app and Copilot CLI write one row per model call.
-- Cost per call is `total_nano_aiu` in nano AI credits. USD = `nano / 1e9 × 0.01`; see `CREDIT_USD` in `src/usage.ts`.
-- `created_at` mixes ISO (`2026-09-23T05:22:23.610Z`) and SQLite (`2026-09-23 05:22:23`) timestamps. Compare with `unixepoch(created_at)`, never as raw strings.
+- Copilot cost per call is `total_nano_aiu` in nano AI credits. USD = `nano / 1e9 × 0.01`; see `CREDIT_USD` in `src/usage.ts`.
+- OpenCode data lives under `%USERPROFILE%\.local\share\opencode` (or `$XDG_DATA_HOME\opencode`). Support `opencode*.db` V1/V2 SQLite schemas, legacy JSON stores, and Desktop's shared local data. `OPENCODE_DB` or `SPEND_NOTCH_OPENCODE_DB` is authoritative and disables default database/legacy JSON discovery.
+- OpenCode assistant messages contain a USD `cost`; aggregate per-message rows, not cumulative session totals, and deduplicate migrated V1/V2 rows by session and message ID.
+- Copilot `created_at` mixes ISO (`2026-09-23T05:22:23.610Z`) and SQLite (`2026-09-23 05:22:23`) timestamps. Compare with `unixepoch(created_at)`, never as raw strings.
 - "Today" starts at local midnight. "Month" starts at local midnight on the 1st.
-- Open the database read-only and never write to it. Copilot owns it and runs it in WAL mode.
+- Open every database read-only and never write to it. Both applications own their stores and may run them in WAL mode.
 
 ## Window behavior (don't break)
 
@@ -84,4 +87,4 @@ Don't screen-capture the desktop. Launch the app with `--remote-debugging-port=<
 - `Page.captureScreenshot` grabs the window.
 - `Input.dispatchMouseEvent` (`mouseMoved` over the notch) expands it.
 
-Point `SPEND_NOTCH_DB` at a synthetic database for screenshots, so no real usage data is captured.
+Point `SPEND_NOTCH_DB` and `SPEND_NOTCH_OPENCODE_DB` at synthetic databases for screenshots, so no real usage data is captured.
