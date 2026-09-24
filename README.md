@@ -70,14 +70,15 @@ Stack: Electron 44, Vite 8, React 19, TypeScript 7, Tailwind CSS 4, Motion and N
 
 GitHub Actions builds releases on Windows and publishes them with the installer attached.
 
-- **Manual:** bump `version` in `package.json`, then push a matching tag:
+- **Pull request:** merge a PR labeled `release:patch`, `release:minor` or `release:major`. The release workflow bumps `main`, tags it, builds the installer and publishes the GitHub release.
+- **Manual:** dispatch `release.yml` with a `bump` of `patch`, `minor` or `major`, or push a matching `v*` tag:
 
   ```
   git tag v0.2.0
   git push origin v0.2.0
   ```
 
-- **Automatic:** when a Dependabot security update or an Electron update is merged, a patch release is cut automatically.
+- **Dependabot:** a merged security or Electron update automatically dispatches a patch release.
 
 The release notes come from `.github/release-notes.md`, followed by the generated changelog.
 

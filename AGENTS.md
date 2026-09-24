@@ -75,6 +75,7 @@ There is no test suite. Validate changes with `npm run build`, then run the app.
 - `release.yml` builds the NSIS installer:
   - A pushed `v*` tag publishes that version.
   - A dispatch with `bump` set to `patch`, `minor` or `major` commits the version bump as `github-actions[bot]`, tags it and publishes it.
+  - A merged PR labeled `release:patch`, `release:minor` or `release:major` requests the corresponding release. The workflow checks out `main`, never PR code.
   - `bump: none` only builds the installer.
 - Merges and pushes made with `GITHUB_TOKEN` don't trigger other workflows. Don't switch to GitHub's native auto-merge, or the release would never run.
 - The `security` group (`applies-to: security-updates`) in `.github/dependabot.yml` is how security PRs are detected. Keep its name.

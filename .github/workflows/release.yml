@@ -10,9 +10,12 @@ on:
         type: choice
         options: [none, patch, minor, major]
         default: none
+  pull_request_target:
+    types: [labeled, closed]
 
 permissions:
   contents: write
+  pull-requests: read
 
 concurrency:
   group: release
@@ -20,6 +23,12 @@ concurrency:
 
 jobs:
   release:
+    if: >-
+      github.event_name != 'pull_request_target' ||
+      (github.event.pull_request.merged == true &&
+       (contains(github.event.pull_request.labels.*.name, 'release:patch') ||
+        contains(github.event.pull_request.labels.*.name, 'release:minor') ||
+        contains(github.event.pull_request.labels.*.name, 'release:major')))
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v7
@@ -29,12 +38,34 @@ jobs:
         with:
           node-version: 24
           cache: npm
-      - name: Bump version
-        id: bump
-        if: inputs.bump == 'patch' || inputs.bump == 'minor' || inputs.bump == 'major'
+      - name: Resolve release
+        id: release
         shell: bash
         env:
-          BUMP: ${{ inputs.bump }}
+          EVENT_NAME: ${{ github.event_name }}
+          DISPATCH_BUMP: ${{ inputs.bump }}
+        run: |
+          bump=none
+          if [[ "$EVENT_NAME" == 'workflow_dispatch' ]]; then
+            bump="$DISPATCH_BUMP"
+          fi
+          if [[ "$EVENT_NAME" == 'pull_request_target' ]]; then
+            labels=$(jq -r '.pull_request.labels[].name' "$GITHUB_EVENT_PATH")
+            if grep -Fxq 'release:major' <<< "$labels"; then
+              bump=major
+            elif grep -Fxq 'release:minor' <<< "$labels"; then
+              bump=minor
+            elif grep -Fxq 'release:patch' <<< "$labels"; then
+              bump=patch
+            fi
+          fi
+          echo "bump=$bump" >> "$GITHUB_OUTPUT"
+      - name: Bump version
+        id: bump
+        if: steps.release.outputs.bump == 'patch' || steps.release.outputs.bump == 'minor' || steps.release.outputs.bump == 'major'
+        shell: bash
+        env:
+          BUMP: ${{ steps.release.outputs.bump }}
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
