@@ -1,7 +1,7 @@
 # Spend Notch
 
-[![release](https://img.shields.io/github/v/release/anjulalk/spendnotch?label=release&labelColor=44403a&color=5f5a51&style=flat-square)](https://github.com/anjulalk/spendnotch/releases/latest)
 [![ci](https://img.shields.io/github/actions/workflow/status/anjulalk/spendnotch/ci.yml?branch=main&label=ci&labelColor=44403a&style=flat-square)](https://github.com/anjulalk/spendnotch/actions/workflows/ci.yml)
+[![release](https://img.shields.io/github/v/release/anjulalk/spendnotch?label=release&labelColor=44403a&color=5f5a51&style=flat-square)](https://github.com/anjulalk/spendnotch/releases/latest)
 [![platform](https://img.shields.io/badge/platform-windows-5f5a51?labelColor=44403a&style=flat-square)](https://github.com/anjulalk/spendnotch/releases/latest)
 [![license](https://img.shields.io/badge/license-MIT-c1603c?labelColor=44403a&style=flat-square)](LICENSE)
 
