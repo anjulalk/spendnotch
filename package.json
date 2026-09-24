@@ -1,0 +1,54 @@
+{
+  "name": "spend-notch",
+  "productName": "Spend Notch",
+  "version": "0.1.0",
+  "description": "Today's GitHub Copilot spend in USD, in a notch at the top of your screen.",
+  "private": true,
+  "type": "module",
+  "main": "dist-electron/main.js",
+  "scripts": {
+    "dev": "vite",
+    "typecheck": "tsc --noEmit",
+    "build": "tsc --noEmit && vite build",
+    "start": "electron .",
+    "dist": "npm run build && electron-builder --win"
+  },
+  "devDependencies": {
+    "@number-flow/react": "^0.6.2",
+    "@primer/octicons-react": "^19.38.0",
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/node": "^26.6.2",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.1",
+    "electron": "^44.4.5",
+    "electron-builder": "^26.15.3",
+    "motion": "^13.4.2",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.0",
+    "vite-plugin-electron": "^1.1.2"
+  },
+  "build": {
+    "appId": "dev.anjulalk.spend-notch",
+    "productName": "Spend Notch",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false
+    },
+    "publish": null
+  }
+}
