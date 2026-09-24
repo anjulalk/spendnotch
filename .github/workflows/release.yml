@@ -4,27 +4,59 @@ on:
   push:
     tags: ['v*']
   workflow_dispatch:
+    inputs:
+      bump:
+        description: Version bump. "none" only builds the installer.
+        type: choice
+        options: [none, patch, minor, major]
+        default: none
 
 permissions:
   contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
 
 jobs:
   release:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.ref_type == 'tag' && github.ref || 'main' }}
       - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: npm
+      - name: Bump version
+        id: bump
+        if: inputs.bump == 'patch' || inputs.bump == 'minor' || inputs.bump == 'major'
+        shell: bash
+        env:
+          BUMP: ${{ inputs.bump }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          tag=$(npm version "$BUMP" --no-git-tag-version)
+          git commit -am "Release $tag"
+          git tag "$tag"
+          git push origin HEAD:main "$tag"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
       - run: npm ci
       - run: npm run dist
       - uses: actions/upload-artifact@v7
         with:
           name: installer
           path: release/*.exe
-      - if: startsWith(github.ref, 'refs/tags/v')
+      - name: Publish release
+        if: github.ref_type == 'tag' || steps.bump.outputs.tag
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" release/*.exe --title "$GITHUB_REF_NAME" --generate-notes
+          TAG: ${{ steps.bump.outputs.tag || github.ref_name }}
+        run: |
+          exe=$(ls release/*.exe)
+          sum=$(sha256sum "$exe" | cut -d' ' -f1)
+          notes=$(sed -e "s/{{sha256}}/$sum/" -e "s/{{file}}/$(basename "$exe")/" .github/release-notes.md)
+          gh release create "$TAG" "$exe" --title "Spend Notch $TAG" --notes "$notes" --generate-notes --verify-tag

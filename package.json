@@ -57,7 +57,8 @@
     },
     "nsis": {
       "oneClick": true,
-      "perMachine": false
+      "perMachine": false,
+      "artifactName": "SpendNotch-Setup-${version}.${ext}"
     },
     "publish": null
   }

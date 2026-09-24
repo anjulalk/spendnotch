@@ -63,6 +63,19 @@ There is no test suite. Validate changes with `npm run build`, then run the app.
 - Prefer Tailwind utilities. Use plain CSS only where utilities don't fit, such as the notch ears.
 - The collapsed notch is 232×34 and sits over other apps' title bars, so keep it small.
 
+## Automation
+
+- `ci.yml` typechecks and builds on every push to `main` and on every PR.
+- `dependabot-merge.yml` runs after CI succeeds on a Dependabot PR:
+  - It approves and squash-merges security, minor and patch updates. Majors wait for review.
+  - For security or Electron updates, it then dispatches a patch release.
+- `release.yml` builds the NSIS installer:
+  - A pushed `v*` tag publishes that version.
+  - A dispatch with `bump` set to `patch`, `minor` or `major` commits the version bump as `github-actions[bot]`, tags it and publishes it.
+  - `bump: none` only builds the installer.
+- Merges and pushes made with `GITHUB_TOKEN` don't trigger other workflows. Don't switch to GitHub's native auto-merge, or the release would never run.
+- The `security` group (`applies-to: security-updates`) in `.github/dependabot.yml` is how security PRs are detected. Keep its name.
+
 ## Verifying UI
 
 Don't screen-capture the desktop. Launch the app with `--remote-debugging-port=<port>` and connect over CDP. Then:

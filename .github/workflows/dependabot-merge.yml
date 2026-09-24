@@ -1,0 +1,53 @@
+name: Dependabot merge
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+
+permissions:
+  actions: write
+  contents: write
+  pull-requests: write
+
+jobs:
+  merge:
+    if: >-
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.actor.login == 'dependabot[bot]' &&
+      github.event.workflow_run.head_repository.full_name == github.repository
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      BRANCH: ${{ github.event.workflow_run.head_branch }}
+      SHA: ${{ github.event.workflow_run.head_sha }}
+    steps:
+      - name: Check update
+        id: check
+        run: |
+          pr=$(gh pr list --head "$BRANCH" --json number,author --jq '.[] | select(.author.login | test("dependabot")) | .number')
+          if [ -z "$pr" ]; then echo "No open Dependabot PR for $BRANCH"; exit 0; fi
+          authors=$(gh pr view "$pr" --json commits --jq '[.commits[].authors[].login] | unique | join(",")')
+          if [ "$authors" != "dependabot[bot]" ]; then echo "Skipping #$pr: commits by $authors"; exit 0; fi
+          title=$(gh pr view "$pr" --json title --jq .title)
+          msg=$(gh api "repos/$GH_REPO/commits/$SHA" --jq .commit.message)
+          security=false; major=false; electron=false
+          [[ "$title" == "Bump the security group"* ]] && security=true
+          grep -q 'update-type: version-update:semver-major' <<< "$msg" && major=true
+          grep -qE 'dependency-name: electron$' <<< "$msg" && electron=true
+          echo "#$pr security=$security major=$major electron=$electron"
+          echo "pr=$pr" >> "$GITHUB_OUTPUT"
+          if [ "$security" = true ] || [ "$major" = false ]; then echo "merge=true" >> "$GITHUB_OUTPUT"; fi
+          if [ "$security" = true ] || [ "$electron" = true ]; then echo "release=true" >> "$GITHUB_OUTPUT"; fi
+      - name: Approve and merge
+        if: steps.check.outputs.merge == 'true'
+        env:
+          PR: ${{ steps.check.outputs.pr }}
+        run: |
+          gh pr review "$PR" --approve --body "Auto-approved: Dependabot update passed CI." || echo "::warning::Could not approve #$PR"
+          gh pr merge "$PR" --squash --delete-branch --match-head-commit "$SHA"
+      - name: Trigger release
+        if: steps.check.outputs.merge == 'true' && steps.check.outputs.release == 'true'
+        run: gh workflow run release.yml -f bump=patch

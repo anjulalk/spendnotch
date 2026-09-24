@@ -5,9 +5,18 @@ updates:
     schedule:
       interval: weekly
     groups:
+      security:
+        applies-to: security-updates
+        patterns: ['*']
       minor:
+        applies-to: version-updates
+        patterns: ['*']
         update-types: [minor, patch]
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: monthly
+    groups:
+      security:
+        applies-to: security-updates
+        patterns: ['*']

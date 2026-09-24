@@ -1,5 +1,6 @@
 # Spend Notch
 
+[![Release](https://img.shields.io/github/v/release/anjulalk/spendnotch)](https://github.com/anjulalk/spendnotch/releases/latest)
 [![CI](https://github.com/anjulalk/spendnotch/actions/workflows/ci.yml/badge.svg)](https://github.com/anjulalk/spendnotch/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
@@ -20,7 +21,7 @@ A MacBook-style notch for Windows that shows what GitHub Copilot has cost you **
 
 ## Install
 
-Download `Spend Notch Setup <version>.exe` from [Releases](https://github.com/anjulalk/spendnotch/releases) and run it. The installer isn't code-signed, so Windows SmartScreen may ask you to confirm.
+Download `SpendNotch-Setup-<version>.exe` from the [latest release](https://github.com/anjulalk/spendnotch/releases/latest) and run it. The installer isn't code-signed, so Windows SmartScreen may ask you to confirm (**More info → Run anyway**).
 
 ## How it measures
 
@@ -50,14 +51,22 @@ Stack: Electron 44, Vite 8, React 19, TypeScript 7, Tailwind CSS 4, Motion and N
 
 ## Release
 
-Bump `version` in `package.json`, then push a matching tag:
+GitHub Actions builds releases on Windows and publishes them with the installer attached.
 
-```
-git tag v0.1.0
-git push origin v0.1.0
-```
+- **Manual:** bump `version` in `package.json`, then push a matching tag:
 
-The Release workflow builds the installer on Windows and publishes it as a GitHub release.
+  ```
+  git tag v0.2.0
+  git push origin v0.2.0
+  ```
+
+- **Automatic:** when a Dependabot security update or an Electron update is merged, a patch release is cut automatically.
+
+The release notes come from `.github/release-notes.md`, followed by the generated changelog.
+
+## Dependency updates
+
+Dependabot checks npm weekly and GitHub Actions monthly. It opens security updates as soon as an advisory lands. Once CI passes, security, minor and patch updates are approved and merged automatically. Major updates wait for review.
 
 ## License
 
